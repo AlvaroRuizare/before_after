@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.politecnico.beforeafter.navigation.Navigation
 import com.politecnico.beforeafter.ui.theme.BeforeAfterTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BeforeAfterTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    Navegacion()
+                    Navigation() // Manage navigation
                 }
             }
         }

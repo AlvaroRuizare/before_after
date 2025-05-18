@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".Servicio2Plano"
+            android:name=".services.BackgroundService"
             android:exported="false"
             android:foregroundServiceType="shortService"/>
     </application>

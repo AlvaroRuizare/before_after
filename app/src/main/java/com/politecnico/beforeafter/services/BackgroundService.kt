@@ -1,4 +1,4 @@
-package com.politecnico.beforeafter
+package com.politecnico.beforeafter.services
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,8 +7,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.politecnico.beforeafter.R
 
-class Servicio2Plano : Service() {
+class BackgroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         startForegroundService()
