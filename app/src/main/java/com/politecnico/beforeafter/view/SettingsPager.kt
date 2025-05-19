@@ -28,11 +28,6 @@ fun SettingsPager(navController: NavHostController, activity : Activity) {
     )
     val settingsPagerUiState by settingsPagerViewModel.estadoPublico.collectAsState()
 
-    // Start background service just once
-    LaunchedEffect(Unit) {
-        settingsPagerViewModel.startBackgroundService(context)
-    }
-
     // Updated HorizontalPager info
     val pagerState = rememberPagerState(
         pageCount = { 4 }

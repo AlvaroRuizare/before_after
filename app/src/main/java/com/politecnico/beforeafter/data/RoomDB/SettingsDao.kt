@@ -17,5 +17,5 @@ interface SettingsDao {
     suspend fun update(setting: SettingsEntity)
 
     @Query("SELECT * from settings")
-    fun getSettings(): SettingsEntity
+    suspend fun getSettings(): SettingsEntity
 }

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.apppracticasjc.Data.RoomDB.LimitedAppsDao
 import com.example.apppracticasjc.Data.RoomDB.SettingsDao
 import com.example.apppracticasjc.Data.RoomDB.SettingsEntity
@@ -13,6 +14,8 @@ import com.politecnico.beforeafter.services.BackgroundService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class BeforeAfterSettingsViewModel(
     private val settingsDao: SettingsDao,
@@ -43,5 +46,21 @@ class BeforeAfterSettingsViewModel(
                 60
             )
         )
+
+        var settings = settingsDao.getSettings()
+
+        // Update UiState beforeSeconds
+        _estadoPrivado.update { estadoActual ->
+            estadoActual.copy(
+                beforeSeconds = settings.beforeSeconds
+            )
+        }
+
+        // Update UiState afterMinutes
+        _estadoPrivado.update { estadoActual ->
+            estadoActual.copy(
+                afterMinutes = settings.afterMinutes
+            )
+        }
     }
 }
