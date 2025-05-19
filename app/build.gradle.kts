@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.politecnico.beforeafter"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -59,6 +59,8 @@ dependencies {
 
     // ROOM
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime.android)
 

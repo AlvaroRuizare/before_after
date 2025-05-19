@@ -28,10 +28,4 @@ class SettingsPagerViewModel : ViewModel() {
             )
         }
     }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun startBackgroundService(context : Context){
-        val intent = Intent(context, BackgroundService::class.java)
-        context.startForegroundService(intent)
-    }
 }

@@ -9,15 +9,20 @@ lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
 composeBom = "2025.05.00"
 navigationCompose = "2.9.0"
+numberpicker = "1.0.3"
+numberpickerVersion = "latestVersion"
 roomCompiler = "2.7.1"
 runtimeLivedataVersion = "1.8.1"
 lifecycleRuntimeKtxVersion = "2.9.0"
 roomCommonJvm = "2.7.1"
 roomRuntimeAndroid = "2.7.1"
+composeMaterial = "1.4.1"
+composeMaterial3 = "1.5.0-beta01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+compose-numberpicker = { module = "com.chargemap.compose:numberpicker", version.ref = "numberpickerVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -38,6 +43,9 @@ androidx-lifecycle-runtime-ktx-v251 = { module = "androidx.lifecycle:lifecycle-r
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
 androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+numberpicker-v103 = { module = "com.chargemap.compose:numberpicker", version.ref = "numberpicker" }
+androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
+androidx-compose-material3 = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "composeMaterial3" }
 
 
 [plugins]
