@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.politecnico.beforeafter.view.AppSelector
 import com.politecnico.beforeafter.view.SettingsPager
 import com.politecnico.beforeafter.view.BeforeAfterSettings
 import com.politecnico.beforeafter.view.Startup
@@ -70,7 +71,12 @@ fun Navigation() {
 
             // Before & After settings
             composable(route = AppScreens.BeforeAfterSettings.route) {
-                BeforeAfterSettings()
+                BeforeAfterSettings(navController)
+            }
+
+            // App Selection list
+            composable(route = AppScreens.AppSelector.route) {
+                AppSelector()
             }
         }
     }

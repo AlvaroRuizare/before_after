@@ -20,12 +20,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -50,15 +52,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.wear.compose.material.rememberPickerState
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
+import com.politecnico.beforeafter.data.model.BeforeAfterSettingsUiState
+import com.politecnico.beforeafter.navigation.AppScreens
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.viewmodel.BeforeAfterSettingsViewModel
 import com.politecnico.beforeafter.viewmodel.BeforeAfterSettingsViewModelFactory
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun BeforeAfterSettings() {
+fun BeforeAfterSettings(navController: NavController) {
     val context = LocalContext.current
     val beforeAfterSettingsViewModel : BeforeAfterSettingsViewModel = viewModel( // Global ViewModel that survives configuration changes
         factory = BeforeAfterSettingsViewModelFactory(
@@ -71,9 +76,10 @@ fun BeforeAfterSettings() {
     // Start BackgroundService
     beforeAfterSettingsViewModel.startBackgroundService(context)
 
-    // Insert default settings
+    // Insert default settings and get limited apps
     LaunchedEffect(Unit) {
         beforeAfterSettingsViewModel.insertDefaultSettings()
+        beforeAfterSettingsViewModel.getLimitedApps()
     }
 
     Column (
@@ -186,17 +192,15 @@ fun BeforeAfterSettings() {
                         CircleShape
                     )
                     .background(Color.Black)
-                    .clickable { Toast.makeText(context, "CLICAO", Toast.LENGTH_SHORT).show() }
+                    .clickable { navController.navigate(AppScreens.AppSelector.route) }
             ) {
-                val listaItems = listOf("ola")
-
                 LazyRow (
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(listaItems) { item ->
-                        if(listaItems.size <= 1){
+                    if(beforeAfterSettingsUiState.limitedAppsList.isEmpty()){
+                        item {
                             Text(text = "Choose limited apps",
                                 fontFamily = DaydreamFont,
                                 fontSize = 12.sp,
@@ -209,7 +213,21 @@ fun BeforeAfterSettings() {
                                 )
                             )
                         }
+                    } else {
+                        items(beforeAfterSettingsUiState.limitedAppsList) { app ->
+                            val icon = remember {
+                                context.packageManager.getApplicationIcon(app.packageName)
+                            }
+                                Icon(
+                                    painter = rememberDrawablePainter(drawable = icon),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(Modifier.width(16.dp))
+                                Text(app.appName)
+                        }
                     }
+
                 }
             }
         }

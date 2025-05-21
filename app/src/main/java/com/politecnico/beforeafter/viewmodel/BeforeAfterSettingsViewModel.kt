@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.apppracticasjc.Data.RoomDB.LimitedAppEntity
 import com.example.apppracticasjc.Data.RoomDB.LimitedAppsDao
 import com.example.apppracticasjc.Data.RoomDB.SettingsDao
 import com.example.apppracticasjc.Data.RoomDB.SettingsEntity
@@ -60,6 +61,16 @@ class BeforeAfterSettingsViewModel(
         _estadoPrivado.update { estadoActual ->
             estadoActual.copy(
                 afterMinutes = settings.afterMinutes
+            )
+        }
+    }
+
+    suspend fun getLimitedApps() {
+        var limitedAppsList = limitedAppsDao.getLimitedApps()
+
+        _estadoPrivado.update { estadoActual ->
+            estadoActual.copy(
+                limitedAppsList = limitedAppsList
             )
         }
     }

@@ -6,9 +6,7 @@ import androidx.room.PrimaryKey
 // Here we define a database table
 
 @Entity(tableName = "limitedApps")
-data class LimitedAppsEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id : Int = 0,
-
+data class LimitedAppEntity(
+    @PrimaryKey val packageName: String,
     val appName : String
 )
