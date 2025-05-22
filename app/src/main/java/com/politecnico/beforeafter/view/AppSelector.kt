@@ -4,12 +4,16 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,8 +22,10 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -27,64 +33,89 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.example.apppracticasjc.Data.RoomDB.LimitedAppEntity
+import com.politecnico.beforeafter.viewmodel.AppSelectorViewModel
+import com.politecnico.beforeafter.viewmodel.AppSelectorViewModelFactory
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Composable
 fun AppSelector() {
     val context = LocalContext.current
+    val appSelectorViewModel : AppSelectorViewModel = viewModel( // Global ViewModel that survives configuration changes
+        factory = AppSelectorViewModelFactory(
+            BeforeAfterDB.getDatabase(context).limitedAppsDao()
+        )
+    )
     val apps = remember { getInstalledApps(context) }
     val selectedApps = remember { mutableStateListOf<ApplicationInfo>() }
+    val coroutineScope = rememberCoroutineScope()
 
-    LazyColumn {
-        items(apps) { app ->
-            val isSelected = selectedApps.contains(app)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        if (isSelected) selectedApps.remove(app)
-                        else selectedApps.add(app)
-                    }
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    painter = rememberDrawablePainter(drawable = app.loadIcon(context.packageManager)),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(app.loadLabel(context.packageManager).toString())
-                Spacer(Modifier.weight(1f))
-                Checkbox(checked = isSelected, onCheckedChange = null)
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .systemBarsPadding()
+    ) {
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            items(apps) { app ->
+                val isSelected = selectedApps.contains(app)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            if (isSelected) selectedApps.remove(app)
+                            else selectedApps.add(app)
+                        }
+                        .padding(16.dp)
+                ) {
+                    Image(
+                        painter = rememberDrawablePainter(drawable = app.loadIcon(context.packageManager)),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Text(app.loadLabel(context.packageManager).toString())
+                    Spacer(Modifier.weight(1f))
+                    Checkbox(checked = isSelected, onCheckedChange = null)
+                }
             }
+        }
+
+        Button(
+            onClick = {
+                val appsToSave = selectedApps.map {
+                    LimitedAppEntity(
+                        packageName = it.packageName,
+                        appName = it.loadLabel(context.packageManager).toString()
+                    )
+                }
+
+                coroutineScope.launch {
+                    appSelectorViewModel.guardarApps(appsToSave)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Guardar selección")
         }
     }
 
-    Button(
-        onClick = {
-            val appsToSave = selectedApps.map {
-                LimitedAppEntity(
-                    packageName = it.packageName,
-                    appName = it.loadLabel(context.packageManager).toString()
-                )
-            }
 
-            //viewmodel.guardarapps
-            //onSaveSelection(appsToSave)
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text("Guardar selección")
-    }
 }
 
 fun getInstalledApps(context: Context): List<ApplicationInfo> {
     val pm = context.packageManager
     return pm.getInstalledApplications(PackageManager.GET_META_DATA)
-        .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+        .filter {
+        // Solo apps que tienen un intent para ser abiertas (con ícono)
+        pm.getLaunchIntentForPackage(it.packageName) != null
+    }
 }
 
 @Composable

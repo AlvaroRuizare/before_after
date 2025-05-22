@@ -218,16 +218,18 @@ fun BeforeAfterSettings(navController: NavController) {
                             val icon = remember {
                                 context.packageManager.getApplicationIcon(app.packageName)
                             }
-                                Icon(
+                                Image(
                                     painter = rememberDrawablePainter(drawable = icon),
                                     contentDescription = null,
-                                    modifier = Modifier.size(40.dp)
+                                    modifier = Modifier.size(70.dp).padding(
+                                        start = 5.dp,
+                                        end = 5.dp,
+                                        top = 10.dp,
+                                        bottom = 10.dp
+                                    )
                                 )
-                                Spacer(Modifier.width(16.dp))
-                                Text(app.appName)
                         }
                     }
-
                 }
             }
         }
