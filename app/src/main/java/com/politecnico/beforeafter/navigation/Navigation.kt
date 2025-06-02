@@ -44,7 +44,7 @@ fun Navigation() {
         startDestination = if (hasUsageAccess && isBackgroundAllowed && hasNotificationPermission) {
             AppScreens.BeforeAfterSettings.route // If all settings are enabled, go straight to main page
         } else {
-            AppScreens.SettingsPagerScreen.route // If not, go to setup page
+            AppScreens.Startup.route // If not, go to startup page
         }
     }
 
