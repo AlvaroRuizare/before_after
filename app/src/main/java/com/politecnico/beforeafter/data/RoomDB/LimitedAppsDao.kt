@@ -11,11 +11,14 @@ import androidx.room.Query
 @Dao
 interface LimitedAppsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(app: LimitedAppsEntity)
+    suspend fun insert(app: LimitedAppEntity)
 
     @Delete
-    suspend fun delete(app: LimitedAppsEntity)
+    suspend fun delete(app: LimitedAppEntity)
 
     @Query("SELECT * from limitedapps")
-    fun getLimitedApps(): LimitedAppsEntity
+    suspend fun getLimitedApps(): List<LimitedAppEntity>
+
+    @Query("DELETE from limitedApps")
+    suspend fun deleteAll()
 }

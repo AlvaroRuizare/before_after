@@ -11,6 +11,7 @@ import com.example.apppracticasjc.Data.RoomDB.SettingsDao
 import com.example.apppracticasjc.Data.RoomDB.SettingsEntity
 import com.politecnico.beforeafter.data.model.BeforeAfterSettingsUiState
 import com.politecnico.beforeafter.services.BackgroundService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,8 +22,8 @@ class BeforeAfterSettingsViewModel(
     private val settingsDao: SettingsDao,
     private val limitedAppsDao: LimitedAppsDao
 ) : ViewModel() {
-    private val _estadoPrivado = MutableStateFlow(BeforeAfterSettingsUiState())
-    val estadoPublico: StateFlow<BeforeAfterSettingsUiState> = _estadoPrivado.asStateFlow()
+    private val _privateState = MutableStateFlow(BeforeAfterSettingsUiState())
+    val publicState: StateFlow<BeforeAfterSettingsUiState> = _privateState.asStateFlow()
 
     /**
      * When starting viewmodel...
@@ -33,34 +34,51 @@ class BeforeAfterSettingsViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun startBackgroundService(context : Context){
-        val intent = Intent(context, BackgroundService::class.java)
-        context.stopService(intent)
-        context.startForegroundService(intent)
+        viewModelScope.launch(Dispatchers.IO) {
+            val intent = Intent(context, BackgroundService::class.java)
+            if (!BackgroundService.isRunning){ // If it's running, don't start it again
+                context.startForegroundService(intent)
+            }
+        }
     }
 
-    suspend fun insertDefaultSettings() {
-        settingsDao.insert(
-            SettingsEntity(
-                0,
-                10,
-                60
+    fun insertDefaultSettings() {
+        viewModelScope.launch(Dispatchers.IO) {
+            settingsDao.insert(
+                SettingsEntity(
+                    0,
+                    10,
+                    60
+                )
             )
-        )
 
-        var settings = settingsDao.getSettings()
+            val settings = settingsDao.getSettings()
 
-        // Update UiState beforeSeconds
-        _estadoPrivado.update { estadoActual ->
-            estadoActual.copy(
-                beforeSeconds = settings.beforeSeconds
-            )
+            // Update UiState beforeSeconds
+            _privateState.update { estadoActual ->
+                estadoActual.copy(
+                    beforeSeconds = settings.beforeSeconds
+                )
+            }
+
+            // Update UiState afterMinutes
+            _privateState.update { estadoActual ->
+                estadoActual.copy(
+                    afterMinutes = settings.afterMinutes
+                )
+            }
         }
+    }
 
-        // Update UiState afterMinutes
-        _estadoPrivado.update { estadoActual ->
-            estadoActual.copy(
-                afterMinutes = settings.afterMinutes
-            )
+    fun getLimitedApps() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val limitedAppsList = limitedAppsDao.getLimitedApps()
+
+            _privateState.update { estadoActual ->
+                estadoActual.copy(
+                    limitedAppsList = limitedAppsList
+                )
+            }
         }
     }
 }

@@ -10,13 +10,18 @@ import androidx.core.app.NotificationCompat
 import com.politecnico.beforeafter.R
 
 class BackgroundService : Service() {
+    companion object {
+        var isRunning = false
+    }
+
     override fun onCreate() {
         super.onCreate()
-        startForegroundService()
+        isRunning = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Aquí pondrías tu lógica de control de uso de apps
+        startForegroundService()
         return START_STICKY
     }
 
@@ -41,6 +46,11 @@ class BackgroundService : Service() {
             .build()
 
         startForeground(1, notification)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isRunning = false
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
