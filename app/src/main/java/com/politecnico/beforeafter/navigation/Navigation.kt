@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.apppracticasjc.Data.RoomDB.LimitedAppsDao
 import com.politecnico.beforeafter.view.AppSelector
 import com.politecnico.beforeafter.view.SettingsPager
 import com.politecnico.beforeafter.view.BeforeAfterSettings
@@ -34,6 +35,7 @@ fun Navigation() {
     val context = LocalContext.current
     val navController = rememberNavController() // Creamos variable con el NavController por defecto para enviarsela al NavHost
     var startDestination by remember { mutableStateOf<String?>(null) }
+    var limitedAppsDao: LimitedAppsDao? = null
 
     // Check permissions...
     LaunchedEffect(Unit) {
@@ -76,7 +78,7 @@ fun Navigation() {
 
             // App Selection list
             composable(route = AppScreens.AppSelector.route) {
-                AppSelector()
+                AppSelector(navController)
             }
         }
     }

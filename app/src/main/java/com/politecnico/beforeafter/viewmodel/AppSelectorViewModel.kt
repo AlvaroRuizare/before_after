@@ -8,7 +8,13 @@ class AppSelectorViewModel(
     private val limitedAppsDao: LimitedAppsDao
 ) : ViewModel() {
 
-    suspend fun guardarApps(appsToSave: List<LimitedAppEntity>) {
+    suspend fun getLimitedApps() : List<LimitedAppEntity> {
+        return limitedAppsDao.getLimitedApps()
+    }
+
+    suspend fun saveApps(appsToSave: List<LimitedAppEntity>) {
+        limitedAppsDao.deleteAll()
+
         for (app in appsToSave){
             limitedAppsDao.insert(app)
         }

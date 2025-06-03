@@ -18,4 +18,7 @@ interface LimitedAppsDao {
 
     @Query("SELECT * from limitedapps")
     suspend fun getLimitedApps(): List<LimitedAppEntity>
+
+    @Query("DELETE from limitedApps")
+    suspend fun deleteAll()
 }

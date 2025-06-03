@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -19,11 +21,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -34,25 +36,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.example.apppracticasjc.Data.RoomDB.LimitedAppEntity
+import com.politecnico.beforeafter.navigation.AppScreens
 import com.politecnico.beforeafter.viewmodel.AppSelectorViewModel
 import com.politecnico.beforeafter.viewmodel.AppSelectorViewModelFactory
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 
 @Composable
-fun AppSelector() {
+fun AppSelector(navController: NavController) {
     val context = LocalContext.current
     val appSelectorViewModel : AppSelectorViewModel = viewModel( // Global ViewModel that survives configuration changes
         factory = AppSelectorViewModelFactory(
             BeforeAfterDB.getDatabase(context).limitedAppsDao()
         )
     )
-    val apps = remember { getInstalledApps(context) }
+
+    val allApps = remember { getInstalledApps(context) }
     val selectedApps = remember { mutableStateListOf<ApplicationInfo>() }
     val coroutineScope = rememberCoroutineScope()
+
+    var limitedApps by remember { mutableStateOf<List<LimitedAppEntity>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        limitedApps = appSelectorViewModel.getLimitedApps()
+
+        val limitedPackageNames = limitedApps.map { it.packageName }
+
+        val selectedAppsFromDB = allApps.filter { app -> limitedPackageNames.contains(app.packageName) }
+        selectedApps.addAll(selectedAppsFromDB)
+    }
+
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -61,14 +75,16 @@ fun AppSelector() {
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            items(apps) { app ->
+            items(allApps) { app ->
                 val isSelected = selectedApps.contains(app)
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (isSelected) selectedApps.remove(app)
-                            else selectedApps.add(app)
+                            if (isSelected)
+                                selectedApps.remove(app)
+                            else
+                                selectedApps.add(app)
                         }
                         .padding(16.dp)
                 ) {
@@ -95,7 +111,8 @@ fun AppSelector() {
                 }
 
                 coroutineScope.launch {
-                    appSelectorViewModel.guardarApps(appsToSave)
+                    appSelectorViewModel.saveApps(appsToSave)
+                    navController.navigate(AppScreens.BeforeAfterSettings.route)
                 }
             },
             modifier = Modifier
