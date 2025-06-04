@@ -13,6 +13,11 @@ val DaydreamFont = FontFamily(
     Font(R.font.daydream)
 )
 
+// Retro gaming font
+val PixelOperatorFont = FontFamily(
+    Font(R.font.pixeloperator)
+)
+
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(

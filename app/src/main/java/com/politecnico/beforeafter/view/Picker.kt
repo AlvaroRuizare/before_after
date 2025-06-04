@@ -1,6 +1,5 @@
 package com.politecnico.beforeafter.view
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +45,7 @@ fun Picker(
     textModifier: Modifier = Modifier,
     textStyle: TextStyle = LocalTextStyle.current,
     dividerColor: Color = LocalContentColor.current,
+    onValueSelected: (String) -> Unit = {}
 ) {
 
     val visibleItemsMiddle = visibleItemsCount / 2
@@ -73,7 +73,9 @@ fun Picker(
         snapshotFlow { listState.firstVisibleItemIndex }
             .map { index -> getItem(index + visibleItemsMiddle) }
             .distinctUntilChanged()
-            //.collect { item -> state.selectedItem = item }
+            .collect { selectedItem ->
+                onValueSelected(selectedItem)
+            }
     }
 
     Box(modifier = modifier) {

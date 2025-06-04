@@ -25,13 +25,16 @@ class BeforeAfterSettingsViewModel(
     private val _privateState = MutableStateFlow(BeforeAfterSettingsUiState())
     val publicState: StateFlow<BeforeAfterSettingsUiState> = _privateState.asStateFlow()
 
-    /**
-     * When starting viewmodel...
-     */
+    // When starting viewmodel...
     init {
-
+        loadSettings()
+        getLimitedApps()
     }
 
+
+    /**
+     * Start the service that detects opened limited apps
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     fun startBackgroundService(context : Context){
         viewModelScope.launch(Dispatchers.IO) {
@@ -42,42 +45,88 @@ class BeforeAfterSettingsViewModel(
         }
     }
 
-    fun insertDefaultSettings() {
+
+    /**
+     * Inserts databse settings or, if the app is opened for the first time, default settings
+     */
+    fun loadSettings() {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsDao.insert(
-                SettingsEntity(
+            val savedSettings = settingsDao.getSettings() // Attempt to get settings from DB
+
+            // If there are saved settings (it's not the first time opening)...
+            if (savedSettings != null) {
+                _privateState.update { currentState -> // Load settings on UiState
+                    currentState.copy(
+                        beforeSeconds = savedSettings.beforeSeconds,
+                        afterMinutes = savedSettings.afterMinutes
+                    )
+                }
+            } else { // If there are no saved settings (it's the first time)...
+                settingsDao.insert(SettingsEntity( // Insert defaults
                     0,
-                    10,
-                    60
-                )
-            )
-
-            val settings = settingsDao.getSettings()
-
-            // Update UiState beforeSeconds
-            _privateState.update { estadoActual ->
-                estadoActual.copy(
-                    beforeSeconds = settings.beforeSeconds
+                    _privateState.value.beforeSeconds,
+                    _privateState.value.afterMinutes)
                 )
             }
 
-            // Update UiState afterMinutes
-            _privateState.update { estadoActual ->
-                estadoActual.copy(
-                    afterMinutes = settings.afterMinutes
+            // 'isLoading' makes the rest of the app wait for the database to retrieve the real data
+            _privateState.update { currentState ->
+                currentState.copy(
+                    isLoading = false
                 )
             }
         }
     }
 
+
+    /**
+     * Get the limited apps list from DB and store it in state
+     */
     fun getLimitedApps() {
         viewModelScope.launch(Dispatchers.IO) {
             val limitedAppsList = limitedAppsDao.getLimitedApps()
 
-            _privateState.update { estadoActual ->
-                estadoActual.copy(
+            _privateState.update { currentState ->
+                currentState.copy(
                     limitedAppsList = limitedAppsList
                 )
+            }
+        }
+    }
+
+
+    /**
+     * Update beforeSeconds state before updating DB
+     */
+    fun updateBeforeState(beforeSeconds: Int) {
+        _privateState.update { currentState ->
+            currentState.copy(
+                beforeSeconds = beforeSeconds
+            )
+        }
+    }
+
+
+    /**
+     * Update afterMinutes state before updating DB
+     */
+    fun updateAfterState(afterMinutes: Int) {
+        _privateState.update { currentState ->
+            currentState.copy(
+                afterMinutes = afterMinutes
+            )
+        }
+    }
+
+
+    /**
+     * Update DB settings
+     */
+    fun updateDBSettings(beforeSeconds: Int, afterMinutes: Int) {
+        if (!_privateState.value.isLoading){
+            viewModelScope.launch {
+                val settingsToSave = SettingsEntity(0, beforeSeconds, afterMinutes)
+                settingsDao.insert(settingsToSave)
             }
         }
     }

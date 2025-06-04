@@ -10,12 +10,12 @@ import androidx.room.Update
 
 @Dao
 interface SettingsDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(setting: SettingsEntity)
 
     @Update
     suspend fun update(setting: SettingsEntity)
 
     @Query("SELECT * from settings")
-    suspend fun getSettings(): SettingsEntity
+    suspend fun getSettings(): SettingsEntity?
 }

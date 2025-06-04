@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.Image
@@ -13,14 +14,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -40,6 +44,7 @@ import androidx.navigation.NavController
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.example.apppracticasjc.Data.RoomDB.LimitedAppEntity
 import com.politecnico.beforeafter.navigation.AppScreens
+import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.viewmodel.AppSelectorViewModel
 import com.politecnico.beforeafter.viewmodel.AppSelectorViewModelFactory
 import kotlinx.coroutines.launch
@@ -101,7 +106,7 @@ fun AppSelector(navController: NavController) {
             }
         }
 
-        Button(
+        OutlinedButton(
             onClick = {
                 val appsToSave = selectedApps.map {
                     LimitedAppEntity(
@@ -115,11 +120,20 @@ fun AppSelector(navController: NavController) {
                     navController.navigate(AppScreens.BeforeAfterSettings.route)
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.height(70.dp).fillMaxWidth().padding(8.dp),
+            border = BorderStroke(2.dp, Color.Black),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.Black,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = Color.Black,
+            ),
         ) {
-            Text("Guardar selección")
+            Text(
+                text="Save selected",
+                fontFamily = DaydreamFont,
+                color = Color.Black
+            )
         }
     }
 
