@@ -1,12 +1,9 @@
 package com.politecnico.beforeafter.viewmodel
 
-import android.content.Context
-import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.politecnico.beforeafter.data.model.SettingsPagerUiState
-import com.politecnico.beforeafter.services.BackgroundService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,8 +19,8 @@ class SettingsPagerViewModel : ViewModel() {
      */
     init {
         // Actualizar algo
-        _estadoPrivado.update { estadoActual ->
-            estadoActual.copy(
+        _estadoPrivado.update { currentState ->
+            currentState.copy(
                 //listaTiposUsuario = tipoUsuarioDao.getAllTiposUsuario()
             )
         }

@@ -26,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +42,7 @@ import androidx.wear.compose.material.rememberPickerState
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.politecnico.beforeafter.navigation.AppScreens
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
+import com.politecnico.beforeafter.ui.theme.PixelOperatorFont
 import com.politecnico.beforeafter.viewmodel.BeforeAfterSettingsViewModel
 import com.politecnico.beforeafter.viewmodel.BeforeAfterSettingsViewModelFactory
 
@@ -50,7 +50,9 @@ import com.politecnico.beforeafter.viewmodel.BeforeAfterSettingsViewModelFactory
 @Composable
 fun BeforeAfterSettings(navController: NavController) {
     val context = LocalContext.current
-    val beforeAfterSettingsViewModel : BeforeAfterSettingsViewModel = viewModel( // Global ViewModel that survives configuration changes
+
+    // When the ViewModel loads, the settings are taken from the database in the init function
+    val beforeAfterSettingsViewModel : BeforeAfterSettingsViewModel = viewModel(
         factory = BeforeAfterSettingsViewModelFactory(
             BeforeAfterDB.getDatabase(context).settingsDao(),
             BeforeAfterDB.getDatabase(context).limitedAppsDao()
@@ -58,161 +60,191 @@ fun BeforeAfterSettings(navController: NavController) {
     )
     val beforeAfterSettingsUiState by beforeAfterSettingsViewModel.publicState.collectAsState()
 
-
-    // Insert default settings and get limited apps
     LaunchedEffect(Unit) {
-        // Start BackgroundService (if it's not running) and load screen settings
+        // Start BackgroundService (if it's not running)
         beforeAfterSettingsViewModel.startBackgroundService(context)
-        beforeAfterSettingsViewModel.insertDefaultSettings()
-        beforeAfterSettingsViewModel.getLimitedApps()
     }
 
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-    ){
-        val valuesBefore = remember { (0..60).map { it.toString() } }
-        val valuesBeforePickerState = rememberPickerState(
-            initialNumberOfOptions = 60
-        )
-        val valuesAfter = remember { (0..120).map { it.toString() } }
-        val valuesAfterPickerState = rememberPickerState(
-            initialNumberOfOptions = 120
-        )
-
-        // BEFORE
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "BEFORE",
-                fontSize = 40.sp,
-                modifier = Modifier.padding(top = 35.dp),
-                fontFamily = DaydreamFont,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(10.dp))
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(
-                        2.dp,
-                        Color.Black,
-                        CircleShape
-                    )
-            ) {
-                Picker(
-                    state = valuesBeforePickerState,
-                    items = valuesBefore,
-                    visibleItemsCount = 3,
-                    textModifier = Modifier.padding(8.dp),
-                    textStyle = TextStyle(fontSize = 32.sp),
-                    dividerColor = Color.Black,
-                    startIndex = beforeAfterSettingsUiState.beforeSeconds
-                )
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = "(seconds to warn the user BEFORE using app)",
-                color = Color.Red,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        // AFTER
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "AFTER",
-                fontSize = 40.sp,
-                modifier = Modifier.padding(top = 35.dp),
-                fontFamily = DaydreamFont,
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(10.dp))
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(
-                        2.dp,
-                        Color.Black,
-                        CircleShape
-                    )
-            ) {
-                Picker(
-                    state = valuesAfterPickerState,
-                    items = valuesAfter,
-                    visibleItemsCount = 3,
-                    textModifier = Modifier.padding(8.dp),
-                    textStyle = TextStyle(fontSize = 32.sp),
-                    dividerColor = Color.Black,
-                    startIndex = beforeAfterSettingsUiState.afterMinutes
-                )
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = "(minutes to block app AFTER exceeding set time)",
-                color = Color.Red,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        // APPS
-        Column(
+    if (!beforeAfterSettingsUiState.isLoading){ // If we have the settings data (is not loading)...
+        Column ( // Load page
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(
-                        2.dp,
-                        Color.Black,
-                        CircleShape
-                    )
-                    .background(Color.Black)
-                    .clickable { navController.navigate(AppScreens.AppSelector.route) }
+            verticalArrangement = Arrangement.SpaceEvenly,
+        ){
+            val valuesBefore = remember { (0..60).map { it.toString() } }
+            val valuesBeforePickerState = rememberPickerState(
+                initialNumberOfOptions = 60
+            )
+            val valuesAfter = remember { (0..120 step 5).map { it.toString() } }
+            val valuesAfterPickerState = rememberPickerState(
+                initialNumberOfOptions = 120
+            )
+
+            // BEFORE
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LazyRow (
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    contentPadding = PaddingValues(horizontal = 16.dp)
+                Text(
+                    text = "BEFORE",
+                    fontSize = 40.sp,
+                    modifier = Modifier.padding(top = 35.dp),
+                    fontFamily = DaydreamFont,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .border(
+                            2.dp,
+                            Color.Black,
+                            CircleShape
+                        )
                 ) {
-                    if(beforeAfterSettingsUiState.limitedAppsList.isEmpty()){
-                        item {
-                            Text(text = "Choose limited apps",
-                                fontFamily = DaydreamFont,
-                                fontSize = 12.sp,
-                                color = Color.White,
-                                modifier = Modifier.padding(
-                                    start = 10.dp,
-                                    end = 10.dp,
-                                    top = 20.dp,
-                                    bottom = 20.dp
-                                )
+                    Picker(
+                        state = valuesBeforePickerState,
+                        items = valuesBefore,
+                        visibleItemsCount = 3,
+                        textModifier = Modifier.padding(8.dp),
+                        textStyle = TextStyle(fontSize = 32.sp),
+                        dividerColor = Color.Black,
+                        startIndex = beforeAfterSettingsUiState.beforeSeconds,
+                        onValueSelected = { value ->
+                            // Update UiState
+                            beforeAfterSettingsViewModel.updateBeforeState(
+                                value.toInt()
+                            )
+
+                            // Update DB using updated UiState
+                            beforeAfterSettingsViewModel.updateDBSettings(
+                                value.toInt(),
+                                beforeAfterSettingsUiState.afterMinutes
                             )
                         }
-                    } else {
-                        items(beforeAfterSettingsUiState.limitedAppsList) { app ->
-                            val icon = remember {
-                                context.packageManager.getApplicationIcon(app.packageName)
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "(seconds to warn the user BEFORE using app)",
+                    fontFamily = PixelOperatorFont,
+                    color = Color.Red,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // AFTER
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "AFTER",
+                    fontSize = 40.sp,
+                    modifier = Modifier.padding(top = 35.dp),
+                    fontFamily = DaydreamFont,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .border(
+                            2.dp,
+                            Color.Black,
+                            CircleShape
+                        )
+                ) {
+                    Picker(
+                        state = valuesAfterPickerState,
+                        items = valuesAfter,
+                        visibleItemsCount = 3,
+                        textModifier = Modifier.padding(8.dp),
+                        textStyle = TextStyle(fontSize = 32.sp),
+                        dividerColor = Color.Black,
+                        startIndex = beforeAfterSettingsUiState.afterMinutes / 5,
+                        onValueSelected = { value ->
+                            // Update UiState
+                            beforeAfterSettingsViewModel.updateAfterState(
+                                value.toInt()
+                            )
+
+                            // Update DB using updated UiState
+                            beforeAfterSettingsViewModel.updateDBSettings(
+                                beforeAfterSettingsUiState.beforeSeconds,
+                                value.toInt()
+                            )
+                        }
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "(minutes to block app AFTER exceeding set time)",
+                    fontFamily = PixelOperatorFont,
+                    color = Color.Red,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // APPS
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .border(
+                            2.dp,
+                            Color.Black,
+                            CircleShape
+                        )
+                        .background(Color.Black)
+                        .clickable { navController.navigate(AppScreens.AppSelector.route) }
+                ) {
+                    LazyRow (
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
+                        // If there are no limited apps selected...
+                        if(beforeAfterSettingsUiState.limitedAppsList.isEmpty()){
+                            item {
+                                Text(text = "Choose limited apps", // Show text
+                                    fontFamily = DaydreamFont,
+                                    fontSize = 12.sp,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(
+                                        start = 10.dp,
+                                        end = 10.dp,
+                                        top = 20.dp,
+                                        bottom = 20.dp
+                                    )
+                                )
                             }
+                        } else { // If there are limited apps selected...
+                            items(beforeAfterSettingsUiState.limitedAppsList) { app -> // For every app...
+                                // Get icon
+                                val icon = remember {
+                                    context.packageManager.getApplicationIcon(app.packageName)
+                                }
+
+                                // Show image
                                 Image(
                                     painter = rememberDrawablePainter(drawable = icon),
                                     contentDescription = null,
-                                    modifier = Modifier.size(70.dp).padding(
-                                        start = 5.dp,
-                                        end = 5.dp,
-                                        top = 10.dp,
-                                        bottom = 10.dp
-                                    )
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .padding(
+                                            start = 5.dp,
+                                            end = 5.dp,
+                                            top = 10.dp,
+                                            bottom = 10.dp
+                                        )
                                 )
+                            }
                         }
                     }
                 }
