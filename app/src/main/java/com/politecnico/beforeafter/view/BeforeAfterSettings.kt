@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -249,6 +250,17 @@ fun BeforeAfterSettings(navController: NavController) {
                     }
                 }
             }
+
+            Text(
+                text = "Back to setup",
+                fontFamily = PixelOperatorFont,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clickable {
+                    navController.navigate(AppScreens.Startup.route)
+                }
+            )
         }
     }
 }
