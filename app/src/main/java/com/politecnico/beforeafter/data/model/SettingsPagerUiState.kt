@@ -11,6 +11,7 @@ import com.politecnico.beforeafter.view.PagerContent
 data class SettingsPagerUiState @RequiresApi(Build.VERSION_CODES.O) constructor(
     var valorCampoUsuario : String = "",
 
+    // Content of each HorizontalPager screen
     var pagerContentList: List<PagerContent> = listOf(
         PagerContent("Usage access", Settings.ACTION_USAGE_ACCESS_SETTINGS, R.drawable.usage_access),
         PagerContent("Battery optimization", Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, R.drawable.battery_optimization),

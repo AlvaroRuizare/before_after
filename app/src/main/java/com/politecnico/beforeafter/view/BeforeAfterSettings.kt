@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,19 +74,20 @@ fun BeforeAfterSettings(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
         ){
+            // BEFORE values
             val valuesBefore = remember { (0..60).map { it.toString() } }
             val valuesBeforePickerState = rememberPickerState(
                 initialNumberOfOptions = 60
             )
+
+            // AFTER values
             val valuesAfter = remember { (0..120 step 5).map { it.toString() } }
             val valuesAfterPickerState = rememberPickerState(
                 initialNumberOfOptions = 120
             )
 
             // BEFORE
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column( horizontalAlignment = Alignment.CenterHorizontally ) {
                 Text(
                     text = "BEFORE",
                     fontSize = 40.sp,
@@ -96,14 +96,11 @@ fun BeforeAfterSettings(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(10.dp))
+
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape )
                 ) {
                     Picker(
                         state = valuesBeforePickerState,
@@ -128,6 +125,7 @@ fun BeforeAfterSettings(navController: NavController) {
                     )
                 }
                 Spacer(Modifier.height(10.dp))
+
                 Text(
                     text = "(seconds to warn the user BEFORE using app)",
                     fontFamily = PixelOperatorFont,
@@ -137,10 +135,9 @@ fun BeforeAfterSettings(navController: NavController) {
                 )
             }
 
+
             // AFTER
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column( horizontalAlignment = Alignment.CenterHorizontally ) {
                 Text(
                     text = "AFTER",
                     fontSize = 40.sp,
@@ -149,14 +146,11 @@ fun BeforeAfterSettings(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(10.dp))
+
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape)
                 ) {
                     Picker(
                         state = valuesAfterPickerState,
@@ -181,6 +175,7 @@ fun BeforeAfterSettings(navController: NavController) {
                     )
                 }
                 Spacer(Modifier.height(10.dp))
+
                 Text(
                     text = "(minutes to block app AFTER exceeding set time)",
                     fontFamily = PixelOperatorFont,
@@ -190,6 +185,7 @@ fun BeforeAfterSettings(navController: NavController) {
                 )
             }
 
+
             // APPS
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -197,11 +193,7 @@ fun BeforeAfterSettings(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape)
                         .background(Color.Black)
                         .clickable { navController.navigate(AppScreens.AppSelector.route) }
                 ) {
@@ -234,7 +226,7 @@ fun BeforeAfterSettings(navController: NavController) {
 
                                 // Show image
                                 Image(
-                                    painter = rememberDrawablePainter(drawable = icon),
+                                    painter = drawableToPainter(drawable = icon),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(70.dp)

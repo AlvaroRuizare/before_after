@@ -28,6 +28,8 @@ import androidx.navigation.NavController
 import com.politecnico.beforeafter.navigation.AppScreens
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 
+// Screen template for each of the HorizontalPager screens
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavController) {
@@ -38,6 +40,7 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Setting image
         ajuste.imagen?.let {
             Image(
                 painter = painterResource(it),
@@ -45,16 +48,18 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        // Pager screen text
+
+
+        // Setting text
         Text(
             text = ajuste.titulo,
             fontFamily = DaydreamFont,
             color = Color.Black
         )
-
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Pager screen button
+
+        // Button to go to setting (or continue if it's the last page)
         Button(
             modifier = Modifier.height(70.dp),
             border = BorderStroke(2.dp, Color.Black),
@@ -65,30 +70,32 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
                 disabledContentColor = Color.Black,
             ),
             onClick = {
-            // If it's the last page...
-            if(ajuste.intentAjuste == null){
-                // Button redirects to Before & After settings
-                navController.navigate(route = AppScreens.BeforeAfterSettings.route)
-            } else {
-                val intent = Intent(ajuste.intentAjuste)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.apply {
-                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                // If it's the last page...
+                if(ajuste.intentAjuste == null){
+                    // Button redirects to Before & After settings
+                    navController.navigate(route = AppScreens.BeforeAfterSettings.route)
+                } else { // If it's one of the setting pages
+                    // Prepare intent
+                    val intent = Intent(ajuste.intentAjuste)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.apply { putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName) }
+
+                    // Go to required setting
+                    try {
+                        activity.startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(activity, "Couldn't open setting", Toast.LENGTH_SHORT).show()
+                    }
                 }
-                try {
-                    activity.startActivity(intent) // Go to required setting
-                } catch (e: Exception) {
-                    Toast.makeText(activity, "Couldn't open setting", Toast.LENGTH_SHORT).show()
-                }
-            }
         }) {
+            // Si es última página (no hay intent)
             if(ajuste.intentAjuste == null){
                 Text(
                     text="Get started",
                     fontFamily = DaydreamFont,
                     color = Color.Black
                 )
-            } else {
+            } else { // Si es página de ajuste...
                 Text(
                     text="Enable",
                     fontFamily = DaydreamFont,

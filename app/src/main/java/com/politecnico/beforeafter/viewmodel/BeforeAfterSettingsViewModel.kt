@@ -33,7 +33,7 @@ class BeforeAfterSettingsViewModel(
 
 
     /**
-     * Start the service that detects opened limited apps
+     * Start the service that detects when limited apps are opened
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun startBackgroundService(context : Context){
@@ -47,7 +47,7 @@ class BeforeAfterSettingsViewModel(
 
 
     /**
-     * Inserts databse settings or, if the app is opened for the first time, default settings
+     * Loads database settings or, if the app is opened for the first time, default settings
      */
     fun loadSettings() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -96,7 +96,7 @@ class BeforeAfterSettingsViewModel(
 
 
     /**
-     * Update beforeSeconds state before updating DB
+     * Update beforeSeconds state
      */
     fun updateBeforeState(beforeSeconds: Int) {
         _privateState.update { currentState ->
@@ -108,7 +108,7 @@ class BeforeAfterSettingsViewModel(
 
 
     /**
-     * Update afterMinutes state before updating DB
+     * Update afterMinutes state
      */
     fun updateAfterState(afterMinutes: Int) {
         _privateState.update { currentState ->
@@ -123,10 +123,10 @@ class BeforeAfterSettingsViewModel(
      * Update DB settings
      */
     fun updateDBSettings(beforeSeconds: Int, afterMinutes: Int) {
-        if (!_privateState.value.isLoading){
+        if (!_privateState.value.isLoading){ // When the data has stopped loading...
             viewModelScope.launch {
                 val settingsToSave = SettingsEntity(0, beforeSeconds, afterMinutes)
-                settingsDao.insert(settingsToSave)
+                settingsDao.insert(settingsToSave) // Save settings
             }
         }
     }

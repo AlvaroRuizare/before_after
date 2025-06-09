@@ -9,20 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+// Settings Pager ViewModel used only for getting uiState
+
 @RequiresApi(Build.VERSION_CODES.O)
 class SettingsPagerViewModel : ViewModel() {
-    private val _estadoPrivado = MutableStateFlow(SettingsPagerUiState())
-    val estadoPublico: StateFlow<SettingsPagerUiState> = _estadoPrivado.asStateFlow()
-
-    /**
-     * Al iniciar el ViewModel...
-     */
-    init {
-        // Actualizar algo
-        _estadoPrivado.update { currentState ->
-            currentState.copy(
-                //listaTiposUsuario = tipoUsuarioDao.getAllTiposUsuario()
-            )
-        }
-    }
+    private val _privateState = MutableStateFlow(SettingsPagerUiState())
+    val publicState: StateFlow<SettingsPagerUiState> = _privateState.asStateFlow()
 }

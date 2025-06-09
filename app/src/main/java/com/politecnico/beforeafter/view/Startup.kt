@@ -30,6 +30,8 @@ import androidx.navigation.NavHostController
 import com.politecnico.beforeafter.navigation.AppScreens
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 
+// First page of the app, the necessary permissions aren't enabled
+
 @Composable
 fun Startup(navController: NavHostController) {
     Column(
@@ -40,6 +42,7 @@ fun Startup(navController: NavHostController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Title logo
         Text(
             text = "B&A",
             fontSize = 75.sp,
@@ -54,6 +57,9 @@ fun Startup(navController: NavHostController) {
             fontWeight = FontWeight.Bold
         )
         Spacer(Modifier.height(60.dp))
+
+
+        // Settings notice
         Box(
             modifier = Modifier.clip(CutCornerShape(40.dp)).background(Color.Black).padding(20.dp)
         ) {
@@ -65,6 +71,9 @@ fun Startup(navController: NavHostController) {
             )
         }
         Spacer(Modifier.height(60.dp))
+
+
+        // Continue button
         OutlinedButton(
             onClick = {navController.navigate(AppScreens.SettingsPagerScreen.route)},
             modifier = Modifier.height(70.dp),

@@ -13,7 +13,7 @@ val DaydreamFont = FontFamily(
     Font(R.font.daydream)
 )
 
-// Retro gaming font
+// Pixel Operator font
 val PixelOperatorFont = FontFamily(
     Font(R.font.pixeloperator)
 )
