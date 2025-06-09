@@ -57,13 +57,14 @@ class BackgroundService : Service() {
         return START_STICKY
     }
 
+
     private fun detectAndDisplayOver() {
         handler.post(object : Runnable {
             override fun run() {
                 val openedApp = getForegroundAppPackageName()
                 if (openedApp != null && isLimitedApp(openedApp)) {
                     // Launch your overlay activity or dialog
-                    launchOverlay()
+                    navigateToWarning()
                 }
                 handler.postDelayed(this, checkInterval)
             }
@@ -89,21 +90,13 @@ class BackgroundService : Service() {
     }
 
 
-    private fun launchOverlay() {
+    private fun navigateToWarning() {
         val intent = Intent(this, WarningOverlay::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
             addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
         }
         startActivity(intent)
-    }
-
-
-    private fun removeOverlay() {
-        overlayView?.let {
-            windowManager.removeView(it)
-            overlayView = null
-        }
     }
 
 

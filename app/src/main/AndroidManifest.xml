@@ -49,6 +49,18 @@
             android:finishOnTaskLaunch="true">
         </activity>
 
+        <activity
+            android:name=".view.NowOverlay"
+            android:theme="@style/Theme.OverlayTheme"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:exported="true"
+            android:finishOnTaskLaunch="true">
+        </activity>
+
         <service
             android:name=".services.BackgroundService"
             android:exported="false"
