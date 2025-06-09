@@ -1,34 +1,41 @@
 package com.politecnico.beforeafter.view
 
-import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.rememberPickerState
 import com.politecnico.beforeafter.R
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.ui.theme.PixelOperatorFont
 
-class WarningOverlay : ComponentActivity() {
+class NowOverlay : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -41,6 +48,13 @@ class WarningOverlay : ComponentActivity() {
                     .fillMaxSize(),
                 color = Color.White
             ) {
+                // NOW values
+                val valuesNow = remember { (1..60).map { it.toString() } }
+                val valuesNowPickerState = rememberPickerState(
+                    initialNumberOfOptions = 60
+                )
+                var selectedMinutes = 10
+
                 Column (
                     modifier = Modifier
                         .fillMaxSize()
@@ -48,29 +62,47 @@ class WarningOverlay : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ){
-                    Image(
-                        painter = painterResource(R.drawable.warning),
-                        contentDescription = "Warning"
-                    )
                     Spacer(Modifier.padding(16.dp))
                     Text(
-                        text = "WARNING!",
+                        text = "NOW",
                         fontFamily = DaydreamFont,
                         color = Color.Black,
                         fontSize = 40.sp
                     )
                     Spacer(Modifier.padding(16.dp))
                     Text(
-                        text = "> You're about to open a limited app.\n\n> Are you sure?",
+                        text = "> How many minutes do you want to be using this app for?",
                         fontFamily = PixelOperatorFont,
                         color = Color.Black,
                         fontSize = 21.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.padding(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .border(2.dp, Color.Black, CircleShape)
+                    ) {
+                        Picker(
+                            state = valuesNowPickerState,
+                            items = valuesNow,
+                            visibleItemsCount = 3,
+                            textModifier = Modifier.padding(8.dp),
+                            textStyle = TextStyle(fontSize = 32.sp),
+                            dividerColor = Color.Black,
+                            startIndex = 9,
+                            onValueSelected = { value ->
+                                selectedMinutes = value.toInt()
+                            }
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
                     OutlinedButton(
-                        onClick = { navigateToNow() },
-                        modifier = Modifier.height(70.dp).fillMaxWidth().padding(8.dp),
+                        onClick = { startCountdownService(selectedMinutes) },
+                        modifier = Modifier
+                            .height(70.dp)
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         border = BorderStroke(2.dp, Color.Black),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
@@ -90,12 +122,8 @@ class WarningOverlay : ComponentActivity() {
         }
     }
 
-    private fun navigateToNow() {
-        val intent = Intent(this, NowOverlay::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-            addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-        }
-        startActivity(intent)
+    private fun startCountdownService(nowMinutes : Int) {
+        // Start countdown service and disable block on database
+        Toast.makeText(this, nowMinutes.toString(), Toast.LENGTH_SHORT).show()
     }
 }
