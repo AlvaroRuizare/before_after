@@ -13,18 +13,20 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
-import androidx.compose.ui.platform.LocalContext
+import android.view.View
+import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
-import com.politecnico.beforeafter.MainActivity
 import com.politecnico.beforeafter.R
-import com.politecnico.beforeafter.navigation.AppScreens
+import com.politecnico.beforeafter.view.WarningOverlay
 import kotlinx.coroutines.runBlocking
 
 class BackgroundService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val checkInterval = 2000L // every 2 seconds
     private lateinit var db: BeforeAfterDB // your Room database instance
+    private var overlayView: View? = null
+    private lateinit var windowManager: WindowManager
 
 
     companion object {
@@ -50,16 +52,16 @@ class BackgroundService : Service() {
         createAndLaunchNotification()
 
         // App blocking logic
-        startAppMonitoring()
+        detectAndDisplayOver()
 
         return START_STICKY
     }
 
-    private fun startAppMonitoring() {
+    private fun detectAndDisplayOver() {
         handler.post(object : Runnable {
             override fun run() {
-                val topPackage = getForegroundAppPackageName()
-                if (topPackage != null && isBlockedApp(topPackage)) {
+                val openedApp = getForegroundAppPackageName()
+                if (openedApp != null && isLimitedApp(openedApp)) {
                     // Launch your overlay activity or dialog
                     launchOverlay()
                 }
@@ -88,14 +90,24 @@ class BackgroundService : Service() {
 
 
     private fun launchOverlay() {
-        val intent = Intent(this, MainActivity::class.java).apply {
+        val intent = Intent(this, WarningOverlay::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+            addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
         }
         startActivity(intent)
     }
 
 
-    private fun isBlockedApp(topPackage: String): Boolean {
+    private fun removeOverlay() {
+        overlayView?.let {
+            windowManager.removeView(it)
+            overlayView = null
+        }
+    }
+
+
+    private fun isLimitedApp(topPackage: String): Boolean {
         var isBlocked = false
 
         runBlocking {
