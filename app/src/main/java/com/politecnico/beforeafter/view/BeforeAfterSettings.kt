@@ -74,19 +74,20 @@ fun BeforeAfterSettings(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
         ){
+            // BEFORE values
             val valuesBefore = remember { (0..60).map { it.toString() } }
             val valuesBeforePickerState = rememberPickerState(
                 initialNumberOfOptions = 60
             )
+
+            // AFTER values
             val valuesAfter = remember { (0..120 step 5).map { it.toString() } }
             val valuesAfterPickerState = rememberPickerState(
                 initialNumberOfOptions = 120
             )
 
             // BEFORE
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column( horizontalAlignment = Alignment.CenterHorizontally ) {
                 Text(
                     text = "BEFORE",
                     fontSize = 40.sp,
@@ -95,14 +96,11 @@ fun BeforeAfterSettings(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(10.dp))
+
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape )
                 ) {
                     Picker(
                         state = valuesBeforePickerState,
@@ -127,6 +125,7 @@ fun BeforeAfterSettings(navController: NavController) {
                     )
                 }
                 Spacer(Modifier.height(10.dp))
+
                 Text(
                     text = "(seconds to warn the user BEFORE using app)",
                     fontFamily = PixelOperatorFont,
@@ -136,10 +135,9 @@ fun BeforeAfterSettings(navController: NavController) {
                 )
             }
 
+
             // AFTER
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column( horizontalAlignment = Alignment.CenterHorizontally ) {
                 Text(
                     text = "AFTER",
                     fontSize = 40.sp,
@@ -148,14 +146,11 @@ fun BeforeAfterSettings(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(10.dp))
+
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape)
                 ) {
                     Picker(
                         state = valuesAfterPickerState,
@@ -180,6 +175,7 @@ fun BeforeAfterSettings(navController: NavController) {
                     )
                 }
                 Spacer(Modifier.height(10.dp))
+
                 Text(
                     text = "(minutes to block app AFTER exceeding set time)",
                     fontFamily = PixelOperatorFont,
@@ -189,6 +185,7 @@ fun BeforeAfterSettings(navController: NavController) {
                 )
             }
 
+
             // APPS
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -196,11 +193,7 @@ fun BeforeAfterSettings(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            CircleShape
-                        )
+                        .border(2.dp, Color.Black, CircleShape)
                         .background(Color.Black)
                         .clickable { navController.navigate(AppScreens.AppSelector.route) }
                 ) {
@@ -233,7 +226,7 @@ fun BeforeAfterSettings(navController: NavController) {
 
                                 // Show image
                                 Image(
-                                    painter = rememberDrawablePainter(drawable = icon),
+                                    painter = drawableToPainter(drawable = icon),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(70.dp)
@@ -249,6 +242,17 @@ fun BeforeAfterSettings(navController: NavController) {
                     }
                 }
             }
+
+            Text(
+                text = "Back to setup",
+                fontFamily = PixelOperatorFont,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clickable {
+                    navController.navigate(AppScreens.Startup.route)
+                }
+            )
         }
     }
 }

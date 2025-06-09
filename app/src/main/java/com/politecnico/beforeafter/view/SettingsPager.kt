@@ -15,9 +15,9 @@ import androidx.navigation.NavHostController
 import com.politecnico.beforeafter.viewmodel.SettingsPagerViewModel
 import com.politecnico.beforeafter.viewmodel.SettingsPagerViewModelFactory
 
-data class PagerContent(val titulo: String, val intentAjuste: String?, @DrawableRes val imagen: Int? = null)
-
 // ViewPager that contains the different necessary setup steps
+
+data class PagerContent(val titulo: String, val intentAjuste: String?, @DrawableRes val imagen: Int? = null)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -26,19 +26,19 @@ fun SettingsPager(navController: NavHostController, activity : Activity) {
     val settingsPagerViewModel : SettingsPagerViewModel = viewModel( // ViewModel global que sobrevive a cambios de configuracion
         factory = SettingsPagerViewModelFactory()
     )
-    val settingsPagerUiState by settingsPagerViewModel.estadoPublico.collectAsState()
+    val settingsPagerUiState by settingsPagerViewModel.publicState.collectAsState()
 
     // Updated HorizontalPager info
     val pagerState = rememberPagerState(
         pageCount = { 4 }
     )
 
-    // Content objects for the Pager screens
+    // List of the contents of each page of the HorizontalPager
     val pagerContentList = settingsPagerUiState.pagerContentList
 
-    // ViewPager
+    // HorizontalPager
     HorizontalPager(state = pagerState) { page ->
-        // Everytime the viewPager is swiped...
+        // Everytime the HorizontalPager is swiped...
         PagerScreen(pagerContentList[page], activity, navController) // Content of the next page updates
     }
 }

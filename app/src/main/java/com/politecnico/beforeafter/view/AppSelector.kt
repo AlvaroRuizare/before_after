@@ -52,24 +52,33 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppSelector(navController: NavController) {
     val context = LocalContext.current
-    val appSelectorViewModel : AppSelectorViewModel = viewModel( // Global ViewModel that survives configuration changes
+
+    // Global ViewModel that survives configuration changes
+    val appSelectorViewModel : AppSelectorViewModel = viewModel(
         factory = AppSelectorViewModelFactory(
             BeforeAfterDB.getDatabase(context).limitedAppsDao()
         )
     )
 
-    val allApps = remember { getInstalledApps(context) }
-    val selectedApps = remember { mutableStateListOf<ApplicationInfo>() }
+    val allApps = remember { getInstalledApps(context) } // Get all installed apps
+    val checkedApps = remember { mutableStateListOf<ApplicationInfo>() } // Apps that are checked in the list
     val coroutineScope = rememberCoroutineScope()
 
-    var limitedApps by remember { mutableStateOf<List<LimitedAppEntity>>(emptyList()) }
+    // Add apps saved in DB as checked
+    var dbLimitedApps by remember { mutableStateOf<List<LimitedAppEntity>>(emptyList()) }
     LaunchedEffect(Unit) {
-        limitedApps = appSelectorViewModel.getLimitedApps()
+        // Get apps from database and include them in the checked apps list
+        dbLimitedApps = appSelectorViewModel.getLimitedApps()
+        val dbLimitedPackageNames = dbLimitedApps.map { it.packageName } // Get only packageName
 
-        val limitedPackageNames = limitedApps.map { it.packageName }
+        // For each app...
+        val dbCheckedApps = allApps.filter {
+            // Save app if the packageName is contained inside dbLimitedPackageNames
+            app -> dbLimitedPackageNames.contains(app.packageName)
+        }
 
-        val selectedAppsFromDB = allApps.filter { app -> limitedPackageNames.contains(app.packageName) }
-        selectedApps.addAll(selectedAppsFromDB)
+        // Add checked DB apps to the checkedApps list
+        checkedApps.addAll(dbCheckedApps)
     }
 
 
@@ -77,24 +86,28 @@ fun AppSelector(navController: NavController) {
         modifier = Modifier.fillMaxSize()
             .systemBarsPadding()
     ) {
+        // Apps list
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
+            // For every app...
             items(allApps) { app ->
-                val isSelected = selectedApps.contains(app)
+                val isSelected = checkedApps.contains(app) // It's selected if it's cointained in 'checkedApps'
+
+                // Show app as row
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            if (isSelected)
-                                selectedApps.remove(app)
-                            else
-                                selectedApps.add(app)
+                        .clickable { // When app clicked...
+                            if (isSelected) // If it's already selected...
+                                checkedApps.remove(app) // Take off 'checkedApps' list
+                            else // If it's not selected...
+                                checkedApps.add(app) // Add to 'checkedApps' list
                         }
                         .padding(16.dp)
                 ) {
                     Image(
-                        painter = rememberDrawablePainter(drawable = app.loadIcon(context.packageManager)),
+                        painter = drawableToPainter(drawable = app.loadIcon(context.packageManager)),
                         contentDescription = null,
                         modifier = Modifier.size(40.dp)
                     )
@@ -106,9 +119,11 @@ fun AppSelector(navController: NavController) {
             }
         }
 
+        // 'Save selected' button
         OutlinedButton(
             onClick = {
-                val appsToSave = selectedApps.map {
+                // Convert 'checkedApps' into a LimitedAppEntity list called 'appsToSave'
+                val appsToSave = checkedApps.map {
                     LimitedAppEntity(
                         packageName = it.packageName,
                         appName = it.loadLabel(context.packageManager).toString()
@@ -116,8 +131,8 @@ fun AppSelector(navController: NavController) {
                 }
 
                 coroutineScope.launch {
-                    appSelectorViewModel.saveApps(appsToSave)
-                    navController.navigate(AppScreens.BeforeAfterSettings.route)
+                    appSelectorViewModel.saveApps(appsToSave) // Save checked apps
+                    navController.navigate(AppScreens.BeforeAfterSettings.route) // Navigate back
                 }
             },
             modifier = Modifier.height(70.dp).fillMaxWidth().padding(8.dp),
@@ -136,21 +151,26 @@ fun AppSelector(navController: NavController) {
             )
         }
     }
-
-
 }
 
+
+/**
+ * Get apps installed in the device
+ */
 fun getInstalledApps(context: Context): List<ApplicationInfo> {
     val pm = context.packageManager
-    return pm.getInstalledApplications(PackageManager.GET_META_DATA)
-        .filter {
-        // Solo apps que tienen un intent para ser abiertas (con ícono)
+    return pm.getInstalledApplications(PackageManager.GET_META_DATA).filter {
+        // Only apps that can be opened, not system apps or services
         pm.getLaunchIntentForPackage(it.packageName) != null
     }
 }
 
+
+/**
+ * Convert drawable to painter
+ */
 @Composable
-fun rememberDrawablePainter(drawable: Drawable): Painter {
+fun drawableToPainter(drawable: Drawable): Painter {
     return remember(drawable) {
         BitmapPainter(drawable.toBitmap().asImageBitmap())
     }
