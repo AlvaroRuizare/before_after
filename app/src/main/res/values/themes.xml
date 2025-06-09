@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.BeforeAfter" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.OverlayTheme" parent="android:Theme.Material.Light.NoActionBar.Fullscreen">
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:layout_margin">0dp</item>
+    </style>
 </resources>

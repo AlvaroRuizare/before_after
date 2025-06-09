@@ -30,7 +30,7 @@ fun SettingsPager(navController: NavHostController, activity : Activity) {
 
     // Updated HorizontalPager info
     val pagerState = rememberPagerState(
-        pageCount = { 4 }
+        pageCount = { 5 }
     )
 
     // List of the contents of each page of the HorizontalPager
