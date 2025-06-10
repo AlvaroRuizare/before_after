@@ -1,11 +1,10 @@
 package com.politecnico.beforeafter.view
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,22 +24,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.rememberPickerState
-import com.politecnico.beforeafter.R
+import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
+import com.politecnico.beforeafter.services.AppBlockingService
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.ui.theme.PixelOperatorFont
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NowOverlay : ComponentActivity() {
+    var nowMinutesMs = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Optional: Auto-dismiss after X seconds
-        // Handler(Looper.getMainLooper()).postDelayed({ finish() }, 5000)
+        val appPackageName = intent.getStringExtra("APP_PACKAGE_NAME") ?: "App is null"
 
         setContent {
             Surface(
@@ -98,7 +101,7 @@ class NowOverlay : ComponentActivity() {
                     }
                     Spacer(Modifier.height(10.dp))
                     OutlinedButton(
-                        onClick = { startCountdownService(selectedMinutes) },
+                        onClick = { startCountdownService(selectedMinutes, appPackageName) },
                         modifier = Modifier
                             .height(70.dp)
                             .fillMaxWidth()
@@ -122,8 +125,26 @@ class NowOverlay : ComponentActivity() {
         }
     }
 
-    private fun startCountdownService(nowMinutes : Int) {
+    private fun startCountdownService(nowMinutes : Int, appPackageName: String) {
+        val context = this
+        val db = BeforeAfterDB.getDatabase(context)
+        val limitedAppsDao = db.limitedAppsDao()
+
         // Start countdown service and disable block on database
-        Toast.makeText(this, nowMinutes.toString(), Toast.LENGTH_SHORT).show()
+        CoroutineScope(Dispatchers.IO).launch {
+            limitedAppsDao.updateLimited(appPackageName, false)
+            finish()
+
+            // start timer service
+            nowMinutesMs = nowMinutes.toLong() * 60000L
+
+            val intent = Intent(context, AppBlockingService::class.java)
+
+            intent.putExtra("appPackageName", appPackageName)
+            intent.putExtra("nowMinutesMs", nowMinutesMs)
+            if (!AppBlockingService.isRunning){ // If it's running, don't start it again
+                context.startForegroundService(intent)
+            }
+        }
     }
 }

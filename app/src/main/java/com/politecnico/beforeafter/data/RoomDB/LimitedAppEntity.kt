@@ -8,5 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "limitedApps")
 data class LimitedAppEntity(
     @PrimaryKey val packageName: String,
-    val appName : String
+    val appName : String,
+    val limited : Boolean,
+    val blocked : Boolean
 )

@@ -24,4 +24,16 @@ interface LimitedAppsDao {
 
     @Query("DELETE from limitedApps")
     suspend fun deleteAll()
+
+    @Query("SELECT limited from limitedapps where packageName = :packageName")
+    suspend fun getLimited(packageName: String) : Boolean
+
+    @Query("UPDATE limitedApps set limited = :isLimited where packageName = :packageName")
+    suspend fun updateLimited(packageName: String, isLimited: Boolean)
+
+    @Query("SELECT blocked from limitedapps where packageName = :packageName")
+    suspend fun getBlocked(packageName: String) : Boolean
+
+    @Query("UPDATE limitedApps set blocked = :isBlocked where packageName = :packageName")
+    suspend fun updateBlocked(packageName: String, isBlocked: Boolean)
 }

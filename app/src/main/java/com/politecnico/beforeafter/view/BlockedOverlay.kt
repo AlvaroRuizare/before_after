@@ -28,7 +28,7 @@ import com.politecnico.beforeafter.R
 import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.ui.theme.PixelOperatorFont
 
-class WarningOverlay : ComponentActivity() {
+class BlockedOverlay : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,14 +53,14 @@ class WarningOverlay : ComponentActivity() {
                     )
                     Spacer(Modifier.padding(16.dp))
                     Text(
-                        text = "WARNING!",
+                        text = "BLOCKED APP",
                         fontFamily = DaydreamFont,
                         color = Color.Black,
                         fontSize = 40.sp
                     )
                     Spacer(Modifier.padding(16.dp))
                     Text(
-                        text = "> You're about to open a limited app.\n\n> Are you sure?",
+                        text = "> The app is currently blocked.\n\n> Wait <TIME> for it to unlock",
                         fontFamily = PixelOperatorFont,
                         color = Color.Black,
                         fontSize = 21.sp,
@@ -68,7 +68,7 @@ class WarningOverlay : ComponentActivity() {
                     )
                     Spacer(Modifier.padding(16.dp))
                     OutlinedButton(
-                        onClick = { navigateToNow(appPackageName) },
+                        onClick = { finish() },
                         modifier = Modifier.height(70.dp).fillMaxWidth().padding(8.dp),
                         border = BorderStroke(2.dp, Color.Black),
                         colors = ButtonDefaults.buttonColors(
