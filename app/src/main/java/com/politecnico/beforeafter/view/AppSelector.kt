@@ -126,7 +126,9 @@ fun AppSelector(navController: NavController) {
                 val appsToSave = checkedApps.map {
                     LimitedAppEntity(
                         packageName = it.packageName,
-                        appName = it.loadLabel(context.packageManager).toString()
+                        appName = it.loadLabel(context.packageManager).toString(),
+                        limited = true,
+                        blocked = false
                     )
                 }
 

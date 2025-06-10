@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 // This is where the Room database is defined and obtained
 
-@Database(entities = [SettingsEntity::class, LimitedAppEntity::class], version = 2, exportSchema = false)
+@Database(entities = [SettingsEntity::class, LimitedAppEntity::class], version = 4, exportSchema = false)
 abstract class BeforeAfterDB : RoomDatabase() {
     // Database imports daos to call queries
     abstract fun settingsDao(): SettingsDao

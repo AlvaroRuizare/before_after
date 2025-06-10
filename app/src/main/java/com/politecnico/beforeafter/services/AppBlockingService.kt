@@ -9,21 +9,28 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.politecnico.beforeafter.R
 import com.politecnico.beforeafter.view.BlockedOverlay
-import com.politecnico.beforeafter.view.WarningOverlay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class BackgroundService : Service() {
+class AppBlockingService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private val checkInterval = 2000L // every 2 seconds
     private lateinit var db: BeforeAfterDB // your Room database instance
+    var remainingTime = 0L
+
 
 
     companion object {
@@ -48,6 +55,12 @@ class BackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         createAndLaunchNotification()
 
+        val appPackageName = intent?.getStringExtra("appPackageName") ?: "App is null"
+        val nowMinutesMs = intent?.getLongExtra("nowMinutesMs", 0L) ?: 0L
+
+        // Start timer
+        startTimer(nowMinutesMs, appPackageName)
+
         // App blocking logic
         detectAndDisplayOver()
 
@@ -55,15 +68,40 @@ class BackgroundService : Service() {
     }
 
 
+    private fun startTimer(receivedMs: Long, appPackageName: String) {
+
+        var countdown_timer: CountDownTimer = object : CountDownTimer(
+            receivedMs,
+            20000
+        ) {
+            override fun onFinish() {
+                CoroutineScope(Dispatchers.IO).launch {
+                    db.limitedAppsDao().updateBlocked(appPackageName, true)
+                    Log.e("TAG", "onFinish: ACABAO")
+                }
+            }
+
+            override fun onTick(p0: Long) {
+                remainingTime = p0
+                Toast.makeText(applicationContext, "$appPackageName: $remainingTime.toString()", Toast.LENGTH_SHORT).show()
+            }
+        }
+        countdown_timer.start   ()
+
+        isRunning = true
+
+    }
+
+
     private fun detectAndDisplayOver() {
         handler.post(object : Runnable {
             override fun run() {
+
+
                 val openedApp = getForegroundAppPackageName()
-                if (openedApp != null && isBlockedApp(openedApp)){
-                    navigateToBlocked(openedApp)
-                } else if (openedApp != null && isLimitedApp(openedApp)) {
+                if (openedApp != null && isLimitedApp(openedApp)) {
                     // Launch your overlay activity or dialog
-                    navigateToWarning(openedApp)
+                    navigateToBlockedOverlay(openedApp)
                 }
                 handler.postDelayed(this, checkInterval)
             }
@@ -74,7 +112,7 @@ class BackgroundService : Service() {
     private fun getForegroundAppPackageName(): String? {
         val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val endTime = System.currentTimeMillis()
-        val beginTime = endTime - 10000
+        val beginTime = endTime - 5000
 
         val usageStatsList = usageStatsManager.queryUsageStats(
             UsageStatsManager.INTERVAL_DAILY,
@@ -89,18 +127,7 @@ class BackgroundService : Service() {
     }
 
 
-    private fun navigateToWarning(packageName : String) {
-        val intent = Intent(this, WarningOverlay::class.java).apply {
-            putExtra("APP_PACKAGE_NAME", packageName)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-            addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-        }
-        startActivity(intent)
-    }
-
-
-    private fun navigateToBlocked(packageName : String) {
+    private fun navigateToBlockedOverlay(packageName : String) {
         val intent = Intent(this, BlockedOverlay::class.java).apply {
             putExtra("APP_PACKAGE_NAME", packageName)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -112,29 +139,14 @@ class BackgroundService : Service() {
 
 
     private fun isLimitedApp(topPackage: String): Boolean {
-        var isLimited = false
-
-        runBlocking {
-            val limitedPackages = db.limitedAppsDao().getLimitedPackageNames()
-            val limited = db.limitedAppsDao().getLimited(topPackage)
-
-            // If it's inside the limited apps and the limit is on...
-            isLimited = limitedPackages.contains(topPackage) && limited
-        }
-
-        return isLimited
-    }
-
-
-    private fun isBlockedApp(topPackage: String): Boolean {
         var isBlocked = false
 
         runBlocking {
-            val limitedPackages = db.limitedAppsDao().getLimitedPackageNames()
-            val blocked = db.limitedAppsDao().getBlocked(topPackage)
+            val blockedPackages = db.limitedAppsDao().getLimitedPackageNames()
+            val blocked = db.limitedAppsDao().getLimited(topPackage)
 
-            // If it's inside the limited apps and it's on blocked period...
-            isBlocked = limitedPackages.contains(topPackage) && blocked
+            // Si está en las apps limitadas y está modo bloqueo, está bloqueado
+            isBlocked = blockedPackages.contains(topPackage) && blocked
         }
 
         return isBlocked
@@ -145,12 +157,12 @@ class BackgroundService : Service() {
      * Show service notification
      */
     private fun createAndLaunchNotification() {
-        val channelId = "limite_tiempo_channel"
+        val channelId = "countdown_channel"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Monitor de uso de apps",
+                "App time usage countdown",
                 NotificationManager.IMPORTANCE_HIGH
             )
 
@@ -159,8 +171,8 @@ class BackgroundService : Service() {
         }
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Background service is active")
-            .setContentText("Waiting for limited apps to be open...")
+            .setContentTitle("App timer countdown is active")
+            .setContentText("Waiting for time to run out...")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .build()
 
@@ -171,7 +183,7 @@ class BackgroundService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
 
-        val restartServiceIntent = Intent(applicationContext, BackgroundService::class.java).also {
+        val restartServiceIntent = Intent(applicationContext, AppBlockingService::class.java).also {
             it.setPackage(packageName)
         }
 
