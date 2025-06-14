@@ -58,7 +58,7 @@ class BackgroundService : Service() {
     private fun detectAndDisplayOver() {
         handler.post(object : Runnable {
             override fun run() {
-                val openedApp = getForegroundAppPackageName()
+                 val openedApp = getForegroundAppPackageName()
                 if (openedApp != null && isBlockedApp(openedApp)){
                     navigateToBlocked(openedApp)
                 } else if (openedApp != null && isLimitedApp(openedApp)) {

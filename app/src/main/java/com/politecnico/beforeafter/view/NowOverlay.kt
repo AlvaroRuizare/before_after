@@ -35,6 +35,7 @@ import com.politecnico.beforeafter.ui.theme.DaydreamFont
 import com.politecnico.beforeafter.ui.theme.PixelOperatorFont
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class NowOverlay : ComponentActivity() {
@@ -135,16 +136,18 @@ class NowOverlay : ComponentActivity() {
             limitedAppsDao.updateLimited(appPackageName, false)
             finish()
 
-            // start timer service
             nowMinutesMs = nowMinutes.toLong() * 60000L
 
-            val intent = Intent(context, AppBlockingService::class.java)
+            // Get 'AFTER' duration
+            val afterMinutesMs = db.settingsDao().getSettings()?.afterMinutes?.times(60000L)
 
-            intent.putExtra("appPackageName", appPackageName)
-            intent.putExtra("nowMinutesMs", nowMinutesMs)
-            if (!AppBlockingService.isRunning){ // If it's running, don't start it again
-                context.startForegroundService(intent)
+            // start timer service
+            val intent = Intent(context, AppBlockingService::class.java).apply {
+                putExtra("appPackageName", appPackageName)
+                putExtra("nowMinutesMs", nowMinutesMs)
+                putExtra("afterMinutesMs", afterMinutesMs)
             }
+            context.startService(intent)
         }
     }
 }
