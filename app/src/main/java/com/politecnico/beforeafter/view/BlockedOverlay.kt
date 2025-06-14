@@ -1,5 +1,6 @@
 package com.politecnico.beforeafter.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.politecnico.beforeafter.R
@@ -33,6 +35,12 @@ class BlockedOverlay : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val appPackageName = intent.getStringExtra("APP_PACKAGE_NAME") ?: "App is null"
+        val prefs = applicationContext.getSharedPreferences("app_locks", Context.MODE_PRIVATE)
+        val unlockTime = prefs.getLong("${appPackageName}_unlockAt", 0L)
+        val currentTime = System.currentTimeMillis()
+
+        val timeLeftMillis = unlockTime - currentTime
+
 
         setContent {
             Surface(
@@ -48,7 +56,7 @@ class BlockedOverlay : ComponentActivity() {
                     verticalArrangement = Arrangement.Center
                 ){
                     Image(
-                        painter = painterResource(R.drawable.warning),
+                        painter = painterResource(R.drawable.blocked),
                         contentDescription = "Warning"
                     )
                     Spacer(Modifier.padding(16.dp))
@@ -56,11 +64,12 @@ class BlockedOverlay : ComponentActivity() {
                         text = "BLOCKED APP",
                         fontFamily = DaydreamFont,
                         color = Color.Black,
-                        fontSize = 40.sp
+                        fontSize = 30.sp,
+                        textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.padding(16.dp))
                     Text(
-                        text = "> The app is currently blocked.\n\n> Wait <TIME> for it to unlock",
+                        text = "> The app is currently blocked.\n\n> Wait ${formatMillisToMinSec(timeLeftMillis)} for it to unlock",
                         fontFamily = PixelOperatorFont,
                         color = Color.Black,
                         fontSize = 21.sp,
@@ -87,6 +96,13 @@ class BlockedOverlay : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun formatMillisToMinSec(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return "${minutes}m ${seconds}s"
     }
 
     private fun navigateToNow(appPackageName: String) {
