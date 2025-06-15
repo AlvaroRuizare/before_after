@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +40,7 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Setting image
-        ajuste.imagen?.let {
+        ajuste.image?.let {
             Image(
                 painter = painterResource(it),
                 contentDescription = ""
@@ -52,7 +51,7 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
 
         // Setting text
         Text(
-            text = ajuste.titulo,
+            text = ajuste.title,
             fontFamily = DaydreamFont,
             color = Color.Black
         )
@@ -64,19 +63,19 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
             modifier = Modifier.height(70.dp),
             border = BorderStroke(2.dp, Color.Black),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                contentColor = Color.Black,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Black,
+                containerColor = Color.Black,
+                contentColor = Color.White,
+                disabledContainerColor = Color.White,
+                disabledContentColor = Color.Black
             ),
             onClick = {
                 // If it's the last page...
-                if(ajuste.intentAjuste == null){
+                if(ajuste.settingIntent == null){
                     // Button redirects to Before & After settings
                     navController.navigate(route = AppScreens.BeforeAfterSettings.route)
                 } else { // If it's one of the setting pages
                     // Prepare intent
-                    val intent = Intent(ajuste.intentAjuste)
+                    val intent = Intent(ajuste.settingIntent)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     intent.apply { putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName) }
 
@@ -88,20 +87,10 @@ fun PagerScreen(ajuste: PagerContent, activity: Activity, navController: NavCont
                     }
                 }
         }) {
-            // Si es última página (no hay intent)
-            if(ajuste.intentAjuste == null){
-                Text(
-                    text="Get started",
-                    fontFamily = DaydreamFont,
-                    color = Color.Black
-                )
-            } else { // Si es página de ajuste...
-                Text(
-                    text="Enable",
-                    fontFamily = DaydreamFont,
-                    color = Color.Black
-                )
-            }
+            Text(
+                text=ajuste.buttonText,
+                fontFamily = DaydreamFont
+            )
         }
     }
 }

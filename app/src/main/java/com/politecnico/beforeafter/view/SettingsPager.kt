@@ -17,7 +17,7 @@ import com.politecnico.beforeafter.viewmodel.SettingsPagerViewModelFactory
 
 // ViewPager that contains the different necessary setup steps
 
-data class PagerContent(val titulo: String, val intentAjuste: String?, @DrawableRes val imagen: Int? = null)
+data class PagerContent(val title: String, val settingIntent: String?, @DrawableRes val image: Int? = null, val buttonText : String)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -30,7 +30,7 @@ fun SettingsPager(navController: NavHostController, activity : Activity) {
 
     // Updated HorizontalPager info
     val pagerState = rememberPagerState(
-        pageCount = { 4 }
+        pageCount = { 5 }
     )
 
     // List of the contents of each page of the HorizontalPager

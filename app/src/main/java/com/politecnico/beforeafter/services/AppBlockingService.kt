@@ -52,18 +52,18 @@ class AppBlockingService : Service() {
 
         // Get data from the 'Now' screen
         val appPackageName = intent?.getStringExtra("appPackageName") ?: return START_NOT_STICKY
-        val nowMinutesMs = intent.getLongExtra("nowMinutesMs", 0L)
-        val afterMinutesMs = intent.getLongExtra("afterMinutesMs", 0L)
+        val nowMinutesMs = intent.getLongExtra("nowMinutesMs", 0L) // 15000L
+        val afterMinutesMs = intent.getLongExtra("afterMinutesMs", 0L) // 15000L
 
 
         // If timer coroutine (job) isn't already in progress...
         if (!activeJobs.containsKey(appPackageName)) {
             // Start 'NOW' timer
             val job = serviceScope.launch {
-                delay(nowMinutesMs) // Allow usage for X time
                 Log.d("TESTING", "Allowing usage of $appPackageName for $nowMinutesMs ms")
+                delay(nowMinutesMs) // Allow usage for X time
 
-                // Get unlock time and store it in SharedPreferences
+                // Get unblocking time to calculate blocked time left
                 val unlockTime = System.currentTimeMillis() + afterMinutesMs
                 val prefs = applicationContext.getSharedPreferences("app_locks", Context.MODE_PRIVATE)
                 prefs.edit().putLong("${appPackageName}_unlockAt", unlockTime).apply()
@@ -75,9 +75,13 @@ class AppBlockingService : Service() {
                 delay(afterMinutesMs) // Block app for X time
 
                 // Set app to initial state
-                db.limitedAppsDao().updateBlocked(appPackageName, false)
-                db.limitedAppsDao().updateLimited(appPackageName, true)
-                Log.d("TESTING", "Setting $appPackageName as default")
+                try {
+                    db.limitedAppsDao().updateBlocked(appPackageName, false)
+                    db.limitedAppsDao().updateLimited(appPackageName, true)
+                    Log.d("TESTING", "$appPackageName set as default")
+                } catch (e: Exception) {
+                    Log.e("TESTING", "FAILED setting $appPackageName as default")
+                }
 
                 // When done, remove from active jobs
                 activeJobs.remove(appPackageName)
@@ -86,7 +90,7 @@ class AppBlockingService : Service() {
             activeJobs[appPackageName] = job
         }
 
-        return START_STICKY
+        return START_REDELIVER_INTENT
     }
 
 
