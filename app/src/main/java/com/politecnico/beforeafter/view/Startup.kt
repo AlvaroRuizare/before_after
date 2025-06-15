@@ -78,16 +78,15 @@ fun Startup(navController: NavHostController) {
             modifier = Modifier.height(70.dp),
             border = BorderStroke(2.dp, Color.Black),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                contentColor = Color.Black,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Black,
+                containerColor = Color.Black,
+                contentColor = Color.White,
+                disabledContainerColor = Color.White,
+                disabledContentColor = Color.Black
             ),
         ) {
             Text(
                 text="Setup settings",
-                fontFamily = DaydreamFont,
-                color = Color.Black
+                fontFamily = DaydreamFont
             )
         }
     }

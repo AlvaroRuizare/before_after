@@ -81,16 +81,15 @@ class BlockedOverlay : ComponentActivity() {
                         modifier = Modifier.height(70.dp).fillMaxWidth().padding(8.dp),
                         border = BorderStroke(2.dp, Color.Black),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.Black,
-                            disabledContainerColor = Color.Transparent,
+                            containerColor = Color.Black,
+                            contentColor = Color.White,
+                            disabledContainerColor = Color.White,
                             disabledContentColor = Color.Black,
                         ),
                     ) {
                         Text(
                             text="Continue",
-                            fontFamily = DaydreamFont,
-                            color = Color.Black
+                            fontFamily = DaydreamFont
                         )
                     }
                 }
@@ -103,15 +102,5 @@ class BlockedOverlay : ComponentActivity() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return "${minutes}m ${seconds}s"
-    }
-
-    private fun navigateToNow(appPackageName: String) {
-        val intent = Intent(this, NowOverlay::class.java).apply {
-            putExtra("APP_PACKAGE_NAME", appPackageName)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-            addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-        }
-        startActivity(intent)
     }
 }

@@ -109,16 +109,15 @@ class NowOverlay : ComponentActivity() {
                             .padding(8.dp),
                         border = BorderStroke(2.dp, Color.Black),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.Black,
-                            disabledContainerColor = Color.Transparent,
+                            containerColor = Color.Black,
+                            contentColor = Color.White,
+                            disabledContainerColor = Color.White,
                             disabledContentColor = Color.Black,
                         ),
                     ) {
                         Text(
                             text="Continue",
-                            fontFamily = DaydreamFont,
-                            color = Color.Black
+                            fontFamily = DaydreamFont
                         )
                     }
                 }

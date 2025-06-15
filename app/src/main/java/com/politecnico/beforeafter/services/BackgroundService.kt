@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.apppracticasjc.Data.RoomDB.BeforeAfterDB
 import com.politecnico.beforeafter.R
@@ -59,11 +60,15 @@ class BackgroundService : Service() {
         handler.post(object : Runnable {
             override fun run() {
                  val openedApp = getForegroundAppPackageName()
+                Log.d("AppChecker", "Currently observed foreground app: $openedApp")
                 if (openedApp != null && isBlockedApp(openedApp)){
                     navigateToBlocked(openedApp)
                 } else if (openedApp != null && isLimitedApp(openedApp)) {
                     // Launch your overlay activity or dialog
-                    navigateToWarning(openedApp)
+                    runBlocking {
+                        val beforeSecondsMs = db.settingsDao().getSettings()?.beforeSeconds?.times(1000L)
+                        navigateToWarning(openedApp, beforeSecondsMs)
+                    }
                 }
                 handler.postDelayed(this, checkInterval)
             }
@@ -89,9 +94,10 @@ class BackgroundService : Service() {
     }
 
 
-    private fun navigateToWarning(packageName : String) {
+    private fun navigateToWarning(packageName : String, beforeSecondsMs : Long?) {
         val intent = Intent(this, WarningOverlay::class.java).apply {
             putExtra("APP_PACKAGE_NAME", packageName)
+            putExtra("beforeSecondsMs", beforeSecondsMs)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
             addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
